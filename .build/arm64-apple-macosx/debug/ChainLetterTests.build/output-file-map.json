@@ -1,0 +1,33 @@
+{
+  "": {
+    "swift-dependencies": "/Users/me/Developer/markov/ChainLetter/.build/arm64-apple-macosx/debug/ChainLetterTests.build/master.swiftdeps"
+  },
+  "/Users/me/Developer/markov/ChainLetter/Tests/ChainLetterTests/ChainTests.swift": {
+    "dependencies": "/Users/me/Developer/markov/ChainLetter/.build/arm64-apple-macosx/debug/ChainLetterTests.build/ChainTests.d",
+    "object": "/Users/me/Developer/markov/ChainLetter/.build/arm64-apple-macosx/debug/ChainLetterTests.build/ChainTests.swift.o",
+    "swiftmodule": "/Users/me/Developer/markov/ChainLetter/.build/arm64-apple-macosx/debug/ChainLetterTests.build/ChainTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/me/Developer/markov/ChainLetter/.build/arm64-apple-macosx/debug/ChainLetterTests.build/ChainTests.swiftdeps",
+    "diagnostics": "/Users/me/Developer/markov/ChainLetter/.build/arm64-apple-macosx/debug/ChainLetterTests.build/ChainTests.dia"
+  },
+  "/Users/me/Developer/markov/ChainLetter/Tests/ChainLetterTests/CombineTests.swift": {
+    "dependencies": "/Users/me/Developer/markov/ChainLetter/.build/arm64-apple-macosx/debug/ChainLetterTests.build/CombineTests.d",
+    "object": "/Users/me/Developer/markov/ChainLetter/.build/arm64-apple-macosx/debug/ChainLetterTests.build/CombineTests.swift.o",
+    "swiftmodule": "/Users/me/Developer/markov/ChainLetter/.build/arm64-apple-macosx/debug/ChainLetterTests.build/CombineTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/me/Developer/markov/ChainLetter/.build/arm64-apple-macosx/debug/ChainLetterTests.build/CombineTests.swiftdeps",
+    "diagnostics": "/Users/me/Developer/markov/ChainLetter/.build/arm64-apple-macosx/debug/ChainLetterTests.build/CombineTests.dia"
+  },
+  "/Users/me/Developer/markov/ChainLetter/Tests/ChainLetterTests/MarkovTextTests.swift": {
+    "dependencies": "/Users/me/Developer/markov/ChainLetter/.build/arm64-apple-macosx/debug/ChainLetterTests.build/MarkovTextTests.d",
+    "object": "/Users/me/Developer/markov/ChainLetter/.build/arm64-apple-macosx/debug/ChainLetterTests.build/MarkovTextTests.swift.o",
+    "swiftmodule": "/Users/me/Developer/markov/ChainLetter/.build/arm64-apple-macosx/debug/ChainLetterTests.build/MarkovTextTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/me/Developer/markov/ChainLetter/.build/arm64-apple-macosx/debug/ChainLetterTests.build/MarkovTextTests.swiftdeps",
+    "diagnostics": "/Users/me/Developer/markov/ChainLetter/.build/arm64-apple-macosx/debug/ChainLetterTests.build/MarkovTextTests.dia"
+  },
+  "/Users/me/Developer/markov/ChainLetter/Tests/ChainLetterTests/SplittersTests.swift": {
+    "dependencies": "/Users/me/Developer/markov/ChainLetter/.build/arm64-apple-macosx/debug/ChainLetterTests.build/SplittersTests.d",
+    "object": "/Users/me/Developer/markov/ChainLetter/.build/arm64-apple-macosx/debug/ChainLetterTests.build/SplittersTests.swift.o",
+    "swiftmodule": "/Users/me/Developer/markov/ChainLetter/.build/arm64-apple-macosx/debug/ChainLetterTests.build/SplittersTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/me/Developer/markov/ChainLetter/.build/arm64-apple-macosx/debug/ChainLetterTests.build/SplittersTests.swiftdeps",
+    "diagnostics": "/Users/me/Developer/markov/ChainLetter/.build/arm64-apple-macosx/debug/ChainLetterTests.build/SplittersTests.dia"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/Users/me/Developer/markov/ChainLetter/.build/arm64-apple-macosx/debug/ChainLetterPackageTests.build/master.swiftdeps"
+  },
+  "/Users/me/Developer/markov/ChainLetter/.build/arm64-apple-macosx/debug/ChainLetterPackageTests.derived/runner.swift": {
+    "dependencies": "/Users/me/Developer/markov/ChainLetter/.build/arm64-apple-macosx/debug/ChainLetterPackageTests.build/runner.d",
+    "object": "/Users/me/Developer/markov/ChainLetter/.build/arm64-apple-macosx/debug/ChainLetterPackageTests.build/runner.swift.o",
+    "swiftmodule": "/Users/me/Developer/markov/ChainLetter/.build/arm64-apple-macosx/debug/ChainLetterPackageTests.build/runner~partial.swiftmodule",
+    "swift-dependencies": "/Users/me/Developer/markov/ChainLetter/.build/arm64-apple-macosx/debug/ChainLetterPackageTests.build/runner.swiftdeps",
+    "diagnostics": "/Users/me/Developer/markov/ChainLetter/.build/arm64-apple-macosx/debug/ChainLetterPackageTests.build/runner.dia"
+  }
+}
