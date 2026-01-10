@@ -1,0 +1,3 @@
+[submodule ".build/checkouts/swift-docc-plugin"]
+    path = .build/checkouts/swift-docc-plugin
+    url = https://github.com/apple/swift-docc-plugin.git
