@@ -65,6 +65,77 @@ swift package --disable-sandbox generate-documentation \
     --hosting-base-path ChainLetter
 ```
 
+### Publish Documentation to `docc` Branch
+
+This publishes the documentation to a `docc` branch in an `html` folder for GitHub Pages.
+
+**Important:** The `--hosting-base-path` must include both the repo name AND the html folder path (e.g., `ChainLetter/html`) for GitHub Pages to work correctly.
+
+```bash
+# 1. Generate the static documentation
+swift package --disable-sandbox generate-documentation \
+    --target ChainLetter \
+    --output-path /tmp/chainletter-docs \
+    --transform-for-static-hosting \
+    --hosting-base-path ChainLetter/html
+
+# 2. Save current branch name
+CURRENT_BRANCH=$(git branch --show-current)
+
+# 3. Stash any uncommitted changes
+git stash --include-untracked
+
+# 4. Switch to docc branch (create orphan if it doesn't exist)
+git checkout docc 2>/dev/null || git checkout --orphan docc
+
+# 5. Remove existing content (if updating)
+git rm -rf . 2>/dev/null || true
+rm -rf *
+
+# 6. Copy documentation into html folder
+mkdir -p html
+cp -R /tmp/chainletter-docs/* html/
+
+# 7. Add an index redirect (optional, for convenience)
+cat > index.html << 'EOF'
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="refresh" content="0; url=html/documentation/chainletter/">
+    <title>Redirecting to ChainLetter Documentation</title>
+</head>
+<body>
+    <p>Redirecting to <a href="html/documentation/chainletter/">ChainLetter Documentation</a>...</p>
+</body>
+</html>
+EOF
+
+# 8. Commit and push
+git add .
+git commit -m "Update documentation"
+git push origin docc
+
+# 9. Return to original branch
+git checkout $CURRENT_BRANCH
+git stash pop 2>/dev/null || true
+
+# 10. Clean up
+rm -rf /tmp/chainletter-docs
+```
+
+**One-liner version** (after initial setup):
+
+```bash
+swift package --disable-sandbox generate-documentation --target ChainLetter --output-path /tmp/chainletter-docs --transform-for-static-hosting --hosting-base-path ChainLetter/html && BRANCH=$(git branch --show-current) && git stash --include-untracked && git checkout docc && rm -rf html && mkdir html && cp -R /tmp/chainletter-docs/* html/ && git add . && git commit -m "Update documentation" && git push origin docc && git checkout $BRANCH && git stash pop 2>/dev/null; rm -rf /tmp/chainletter-docs
+```
+
+**GitHub Pages Setup:**
+
+1. Go to repository Settings > Pages
+2. Set Source to "Deploy from a branch"
+3. Select `docc` branch and `/ (root)` folder
+4. Documentation will be available at: `https://yourusername.github.io/ChainLetter/`
+
 ## Package Management
 
 ### Update Dependencies
