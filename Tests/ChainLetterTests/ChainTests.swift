@@ -44,6 +44,21 @@ struct ChainTests {
             dict[state1] = 1
             #expect(dict[state2] == 1)
         }
+
+        @Test("State size property")
+        func sizeProperty() {
+            let state1 = State(words: ["a"])
+            #expect(state1.size == 1)
+
+            let state2 = State(words: ["a", "b"])
+            #expect(state2.size == 2)
+
+            let state3 = State(words: ["a", "b", "c", "d", "e"])
+            #expect(state3.size == 5)
+
+            let emptyState = State(words: [])
+            #expect(emptyState.size == 0)
+        }
     }
 
     // MARK: - Model Building Tests
@@ -121,6 +136,57 @@ struct ChainTests {
 
             let state = State(words: ["a", "b", "c"])
             #expect(chain.model[state]?["d"] == 1)
+        }
+
+        @Test("Pre-built model initialization")
+        func preBuiltModel() {
+            // Manually create a model
+            let beginState = State.begin(size: 2)
+            let state1 = State(words: [State.beginToken, "hello"])
+            let state2 = State(words: ["hello", "world"])
+
+            let model: [State: [String: Int]] = [
+                beginState: ["hello": 1],
+                state1: ["world": 1],
+                state2: [State.endToken: 1]
+            ]
+
+            let chain = Chain(model: model, stateSize: 2)
+
+            #expect(chain.stateSize == 2)
+            #expect(chain.model.count == 3)
+            #expect(!chain.compiled)
+
+            // Should be able to walk
+            let result = chain.walk()
+            #expect(result == ["hello", "world"])
+        }
+
+        @Test("Pre-built model with multiple transitions")
+        func preBuiltModelMultipleTransitions() {
+            let beginState = State.begin(size: 1)
+            let stateA = State(words: ["a"])
+            let stateB = State(words: ["b"])
+
+            let model: [State: [String: Int]] = [
+                beginState: ["a": 3, "b": 1],  // "a" is 3x more likely
+                stateA: [State.endToken: 1],
+                stateB: [State.endToken: 1]
+            ]
+
+            let chain = Chain(model: model, stateSize: 1)
+
+            // Generate many and count
+            var aCount = 0
+            var bCount = 0
+            for _ in 0..<100 {
+                let result = chain.walk()
+                if result == ["a"] { aCount += 1 }
+                if result == ["b"] { bCount += 1 }
+            }
+
+            // "a" should appear more often (roughly 3x)
+            #expect(aCount > bCount)
         }
     }
 
@@ -201,6 +267,58 @@ struct ChainTests {
 
             // Should continue from "b" -> "c" -> END
             #expect(result == ["c"])
+        }
+
+        @Test("Move from state with empty transitions returns nil")
+        func moveEmptyTransitions() {
+            // Create a model with an empty transitions dictionary
+            let beginState = State.begin(size: 1)
+            let stateA = State(words: ["a"])
+
+            let model: [State: [String: Int]] = [
+                beginState: ["a": 1],
+                stateA: [:]  // Empty transitions
+            ]
+
+            let chain = Chain(model: model, stateSize: 1)
+
+            // Move from stateA should return nil
+            let result = chain.move(from: stateA)
+            #expect(result == nil)
+        }
+
+        @Test("Walk stops at state with no transitions")
+        func walkStopsAtDeadEnd() {
+            // Create a chain where we can reach a dead end
+            let beginState = State.begin(size: 1)
+            // Note: stateA = State(words: ["a"]) has no entry - it's a dead end
+
+            let model: [State: [String: Int]] = [
+                beginState: ["a": 1],
+                // State(words: ["a"]) has no entry - it's a dead end
+            ]
+
+            let chain = Chain(model: model, stateSize: 1)
+            let result = chain.walk()
+
+            // Should get "a" and then stop (no END token, just stops)
+            #expect(result == ["a"])
+        }
+
+        @Test("Walk with state that only leads to END")
+        func walkDirectToEnd() {
+            let beginState = State.begin(size: 1)
+            let stateA = State(words: ["a"])
+
+            let model: [State: [String: Int]] = [
+                beginState: ["a": 1],
+                stateA: [State.endToken: 1]
+            ]
+
+            let chain = Chain(model: model, stateSize: 1)
+            let result = chain.walk()
+
+            #expect(result == ["a"])
         }
     }
 

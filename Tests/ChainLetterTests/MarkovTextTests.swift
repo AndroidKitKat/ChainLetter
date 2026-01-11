@@ -292,6 +292,204 @@ struct MarkovTextTests {
         }
     }
 
+    // MARK: - Start With Non-Strict Tests
+
+    @Suite("Start With Non-Strict")
+    struct StartWithNonStrictTests {
+
+        @Test("Non-strict mode matches any state ending with beginning")
+        func nonStrictMatches() {
+            let corpus = """
+            The cat sat on the mat. A cat ran fast.
+            One cat is here. My cat sleeps.
+            """
+            let text = MarkovText(corpus, stateSize: 2)
+
+            // "cat" appears mid-sentence in multiple places
+            // Non-strict mode should find states ending with "cat"
+            let sentence = text.makeSentenceWithStart("cat", strict: false, tries: 20, testOutput: false)
+            #expect(sentence != nil)
+            if let s = sentence {
+                #expect(s.hasPrefix("cat"))
+            }
+        }
+
+        @Test("Non-strict mode with multi-word beginning")
+        func nonStrictMultiWord() {
+            let corpus = """
+            I saw the big dog run. The big dog barked loudly.
+            A big dog is friendly. My big dog sleeps.
+            """
+            let text = MarkovText(corpus, stateSize: 2)
+
+            let sentence = text.makeSentenceWithStart("big dog", strict: false, tries: 20, testOutput: false)
+            #expect(sentence != nil)
+            if let s = sentence {
+                #expect(s.hasPrefix("big dog"))
+            }
+        }
+
+        @Test("Non-strict returns nil for unknown ending")
+        func nonStrictUnknown() {
+            let text = MarkovText("Hello world. Goodbye moon.", stateSize: 2)
+            let sentence = text.makeSentenceWithStart("xyz", strict: false, tries: 5)
+            #expect(sentence == nil)
+        }
+
+        @Test("Strict vs non-strict difference")
+        func strictVsNonStrict() {
+            // "fox" only appears mid-sentence, not at start
+            let corpus = "The quick fox jumps. A fast fox runs."
+            let text = MarkovText(corpus, stateSize: 2)
+
+            // Strict mode should fail - "fox" never starts a sentence
+            let strictResult = text.makeSentenceWithStart("fox", strict: true, tries: 10, testOutput: false)
+            #expect(strictResult == nil)
+
+            // Non-strict mode should succeed - "fox" appears after other words
+            let nonStrictResult = text.makeSentenceWithStart("fox", strict: false, tries: 20, testOutput: false)
+            #expect(nonStrictResult != nil)
+        }
+    }
+
+    // MARK: - WellFormed Tests
+
+    @Suite("WellFormed Filtering")
+    struct WellFormedFilteringTests {
+
+        @Test("Lowercase starting sentences are rejected when wellFormed=true")
+        func lowercaseRejected() {
+            // Create corpus where the only sentence starts with lowercase
+            let text = MarkovText("lowercase start here.", stateSize: 2, wellFormed: true)
+            // Should produce empty model since the sentence is rejected
+            #expect(text.chain.model.isEmpty)
+        }
+
+        @Test("Lowercase starting sentences allowed when wellFormed=false")
+        func lowercaseAllowed() {
+            let text = MarkovText("lowercase start here.", stateSize: 2, wellFormed: false)
+            #expect(!text.chain.model.isEmpty)
+            let sentence = text.makeSentence(testOutput: false)
+            #expect(sentence == "lowercase start here.")
+        }
+
+        @Test("iPhone is allowed as lowercase starter")
+        func iphoneAllowed() {
+            let text = MarkovText("iPhone is great.", stateSize: 2, wellFormed: true)
+            #expect(!text.chain.model.isEmpty)
+            let sentence = text.makeSentence(testOutput: false)
+            #expect(sentence == "iPhone is great.")
+        }
+
+        @Test("iPad is allowed as lowercase starter")
+        func ipadAllowed() {
+            let text = MarkovText("iPad is amazing.", stateSize: 2, wellFormed: true)
+            #expect(!text.chain.model.isEmpty)
+        }
+
+        @Test("iOS is allowed as lowercase starter")
+        func iosAllowed() {
+            let text = MarkovText("iOS runs smoothly.", stateSize: 2, wellFormed: true)
+            #expect(!text.chain.model.isEmpty)
+        }
+
+        @Test("eBay is allowed as lowercase starter")
+        func ebayAllowed() {
+            let text = MarkovText("eBay sells everything.", stateSize: 2, wellFormed: true)
+            #expect(!text.chain.model.isEmpty)
+        }
+
+        @Test("iTunes is allowed as lowercase starter")
+        func itunesAllowed() {
+            let text = MarkovText("iTunes plays music.", stateSize: 2, wellFormed: true)
+            #expect(!text.chain.model.isEmpty)
+        }
+
+        @Test("Single lowercase letter is allowed")
+        func singleLowercaseLetter() {
+            // Single letters like "i" should be allowed
+            let text = MarkovText("i am here.", stateSize: 2, wellFormed: true)
+            #expect(!text.chain.model.isEmpty)
+        }
+
+        @Test("Mixed corpus filters correctly")
+        func mixedCorpus() {
+            let corpus = """
+            Hello there. lowercase rejected. iPhone allowed. another lowercase.
+            Goodbye friend. eBay works.
+            """
+            let text = MarkovText(corpus, stateSize: 2, wellFormed: true)
+
+            // Should have some sentences but not the lowercase ones
+            #expect(!text.chain.model.isEmpty)
+
+            // Generate many sentences - should never get ones starting with "lowercase" or "another"
+            for _ in 0..<20 {
+                if let sentence = text.makeSentence(testOutput: false) {
+                    #expect(!sentence.hasPrefix("lowercase"))
+                    #expect(!sentence.hasPrefix("another"))
+                }
+            }
+        }
+    }
+
+    // MARK: - Custom Splitter Tests
+
+    @Suite("Custom Splitters")
+    struct CustomSplitterTests {
+
+        @Test("Custom word splitter")
+        func customWordSplitter() {
+            // Use comma as word separator instead of space
+            let text = MarkovText(
+                "Hello,world,today. Goodbye,moon,tonight.",
+                stateSize: 2,
+                wellFormed: false,
+                wordSplitter: { $0.replacingOccurrences(of: ".", with: "").split(separator: ",").map(String.init) }
+            )
+
+            #expect(!text.chain.model.isEmpty)
+
+            // The model should have "Hello" -> "world" transitions
+            let beginState = State.begin(size: 2)
+            let firstWords = text.chain.model[beginState]?.keys
+            #expect(firstWords?.contains("Hello") == true || firstWords?.contains("Goodbye") == true)
+        }
+
+        @Test("Custom word joiner")
+        func customWordJoiner() {
+            let text = MarkovText(
+                "One two three.",
+                stateSize: 2,
+                wellFormed: false,
+                wordJoiner: { $0.joined(separator: "-") }
+            )
+
+            let sentence = text.makeSentence(testOutput: false)
+            #expect(sentence != nil)
+            // Should join with hyphens
+            #expect(sentence?.contains("-") == true)
+            #expect(sentence == "One-two-three.")
+        }
+
+        @Test("Custom word splitter and joiner together")
+        func customBoth() {
+            // Split on pipes, join with underscores
+            let text = MarkovText(
+                "a|b|c",
+                stateSize: 1,
+                wellFormed: false,
+                sentenceSplitter: { [$0] }, // Treat whole text as one sentence
+                wordSplitter: { $0.split(separator: "|").map(String.init) },
+                wordJoiner: { $0.joined(separator: "_") }
+            )
+
+            let sentence = text.makeSentence(testOutput: false)
+            #expect(sentence != nil)
+            #expect(sentence?.contains("_") == true)
+        }
+    }
+
     // MARK: - Edge Cases
 
     @Suite("Edge Cases")

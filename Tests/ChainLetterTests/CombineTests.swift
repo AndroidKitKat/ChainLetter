@@ -100,6 +100,101 @@ struct CombineTests {
             #expect(!words.isEmpty)
             #expect(words.first == "the")
         }
+
+        @Test("Zero weight effectively removes chain")
+        func zeroWeight() throws {
+            let corpus1 = [["cat"]]
+            let corpus2 = [["dog"]]
+
+            let chain1 = Chain(corpus: corpus1, stateSize: 1)
+            let chain2 = Chain(corpus: corpus2, stateSize: 1)
+
+            // Weight chain1 at 0, chain2 at 1
+            let combined = try Chain.combine([chain1, chain2], weights: [0.0, 1.0])
+
+            // Should only generate "dog"
+            for _ in 0..<20 {
+                let result = combined.walk()
+                #expect(result == ["dog"])
+            }
+        }
+
+        @Test("Very small weights round to zero")
+        func verySmallWeights() throws {
+            let corpus1 = [["cat"]]
+            let corpus2 = [["dog"]]
+
+            let chain1 = Chain(corpus: corpus1, stateSize: 1)
+            let chain2 = Chain(corpus: corpus2, stateSize: 1)
+
+            // Weight chain1 with very small value (rounds to 0)
+            let combined = try Chain.combine([chain1, chain2], weights: [0.001, 1.0])
+
+            // Should only generate "dog" since 0.001 rounds to 0
+            for _ in 0..<20 {
+                let result = combined.walk()
+                #expect(result == ["dog"])
+            }
+        }
+
+        @Test("Large weights scale correctly")
+        func largeWeights() throws {
+            let corpus1 = [["cat"]]
+            let corpus2 = [["dog"]]
+
+            let chain1 = Chain(corpus: corpus1, stateSize: 1)
+            let chain2 = Chain(corpus: corpus2, stateSize: 1)
+
+            // Weight chain1 at 100x chain2
+            let combined = try Chain.combine([chain1, chain2], weights: [100.0, 1.0])
+
+            // "cat" should appear much more often
+            var catCount = 0
+            var dogCount = 0
+            for _ in 0..<100 {
+                let result = combined.walk()
+                if result == ["cat"] { catCount += 1 }
+                if result == ["dog"] { dogCount += 1 }
+            }
+
+            #expect(catCount > dogCount * 10) // Should be roughly 100x
+        }
+
+        @Test("Fractional weights work")
+        func fractionalWeights() throws {
+            let corpus1 = [["cat"]]
+            let corpus2 = [["dog"]]
+
+            let chain1 = Chain(corpus: corpus1, stateSize: 1)
+            let chain2 = Chain(corpus: corpus2, stateSize: 1)
+
+            // Both with fractional weights - 0.5 rounds to 0, so we use 1.5 instead
+            // to ensure both chains contribute
+            let combined = try Chain.combine([chain1, chain2], weights: [1.5, 1.5])
+
+            var catCount = 0
+            var dogCount = 0
+            for _ in 0..<50 {
+                let result = combined.walk()
+                if result == ["cat"] { catCount += 1 }
+                if result == ["dog"] { dogCount += 1 }
+            }
+
+            // Both should appear with roughly equal probability
+            #expect(catCount > 0)
+            #expect(dogCount > 0)
+        }
+
+        @Test("Single chain combine works")
+        func singleChainCombine() throws {
+            let corpus = [["hello", "world"]]
+            let chain = Chain(corpus: corpus, stateSize: 2)
+
+            let combined = try Chain.combine([chain])
+
+            let result = combined.walk()
+            #expect(result == ["hello", "world"])
+        }
     }
 
     // MARK: - MarkovText Combine Tests
